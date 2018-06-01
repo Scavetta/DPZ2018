@@ -1,2 +1,2 @@
 # DPZ2018
-Data Analysis, until day 2 lunch
+In-class scripts for Data Analysis with R at the DPZ, 05-2018
