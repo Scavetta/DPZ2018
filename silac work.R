@@ -58,12 +58,68 @@ protein.df <- subset(protein.df, Contaminant != "+")
 
 # Exercise 2, p59
 subset(protein.df, Uniprot %in% paste0(c("GOGA7", "PSA6", "S10AB"), "_MOUSE"))
+# Exercise 1, p64: just rows
+protein.df[protein.df$Uniprot %in% paste0(c("GOGA7", "PSA6", "S10AB"), "_MOUSE") , ]
+# also, get just columns of interest: Uniprot, Ratio.M.L, Ratio.H.M
+protein.df[  ,  c("Uniprot", "Ratio.M.L", "Ratio.H.M")  ]
+# Do both rows and columns:
+protein.df[protein.df$Uniprot %in% paste0(c("GOGA7", "PSA6", "S10AB"), "_MOUSE") , 
+           c("Uniprot", "Ratio.M.L", "Ratio.H.M") ]
 
-# Exercise 3
+# Exercise 3, p59
 subset(protein.df, Ratio.H.M.Sig < 0.05)
+# Exercise 2, p64: use []
+protein.df[ protein.df$Ratio.H.M.Sig < 0.05 , ]
 
-# Exercise 4: HM ratio beyond [-2,2]
+# Exercise 4, p59: HM ratio beyond [-2,2] - NAs are removed
 subset(protein.df, Ratio.H.M > 2 | Ratio.H.M < -2)
+# Exercise 3, p64: In this case the NAs are included
+protein.df[protein.df$Ratio.H.M > 2 | protein.df$Ratio.H.M < -2 , ]
 
+# Introduction to dplyr
+# Start from the beginning:
+rm(list = ls())
+protein.df <- read.delim("Protein.txt", stringsAsFactors = FALSE)
 
+# Make a tibble:
+protein.df <- as_tibble(protein.df)
 
+# 3 Main Components to dplyr
+# 1 - %>% pipe operator (shift-ctrl-m)
+1:10 %>% 
+  mean()
+# the same as
+mean(1:10)
+
+# 2 - The five verbs (The "grammar" of data analysis)
+# 2a - filter (simiar to subset(), or [])
+# 2b - arrange (by default lowest to highest "ascending")
+# 2c - select (specific columns)
+protein.df %>% 
+  filter(Contaminant != "+") %>% 
+  arrange(Ratio.H.M) %>% 
+  select(Uniprot, Ratio.H.M, Ratio.H.M.Sig)
+
+# 2c+ - Helper functions
+# proteins with the 20 higest HM ratios (and other ratios)
+protein.df %>% 
+  filter(Contaminant != "+") %>% 
+  arrange(desc(Ratio.H.M)) %>% 
+  select(Uniprot, starts_with("Rat"), -ends_with("Sig")) %>% 
+  .[1:20,]
+
+# 2d - mutate, for transformations
+# All ratios at once, in situ:
+protein.df %>% 
+  filter(Contaminant != "+") %>% 
+  mutate_at(vars(starts_with("Rat"), -ends_with("Sig")), log2)
+
+# Individual columns, add to data frame:
+protein.df %>% 
+  filter(Contaminant != "+") %>% 
+  mutate(Ratio.H.M.log2 = log2(Ratio.H.M),
+         Ratio.M.L.log2 = log2(Ratio.M.L))
+
+# Go back to the main tutorial
+# 2e - summarise, for aggregrations
+# 3 - group_by, an adverb for splitting

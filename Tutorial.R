@@ -10,6 +10,7 @@ rm(list = ls())
 library(dplyr)
 library(ggplot2)
 library(purrr)
+library(tidyr)
 
 # R Syntax:
 n <- log2(8) # the log2 of 8
@@ -415,3 +416,72 @@ foo.df[,3] # 3rd column, as vector
 
 # Major problem # 2: Wrong structure!
 # Solution: rearrange or coerce structure
+
+
+index <- foo.df$tissue == "Heart"
+foo.df[index,]
+
+# Get a specific column
+
+foo.df[,2] # column 2
+foo.df[,"tissue"] # by name
+
+# Element 8: Factor Variables (with "levels")
+# AKA: Categorical, discrete, qualitative
+# with "groups" - small and known number
+
+# e.g.
+PlantGrowth$group
+
+typeof(PlantGrowth$group) # integer, with associated levels
+str(PlantGrowth)
+class(PlantGrowth$group)
+
+# some issues:
+foo3 # character
+foo.df$tissue # factor
+
+# Converting:
+test.df <- data.frame(test)
+test.df$test # converted to a factor
+# convert to integers:
+as.integer(test.df$test) # from a factor
+as.integer(test) # from the original character
+
+# Element 9: Tidy Data
+# Some play data
+
+# work on a new data set:
+PlayData <- data.frame(type = rep(c("A", "B"), each = 2),
+                       time = 1:2,
+                       height = seq(10, 40, 10),
+                       width = seq(50, 80, 10))
+
+# To rearrange our data to Tidy, use tidyr:
+# four arguments:
+# 1 - data,
+# 2 - name of the output key,
+# 3 - name of the output value
+# 4 - the ID or the MEASURE variables
+PlayData.t <- gather(PlayData, key, value, -c(type, time)) # using ID
+gather(PlayData, key, value, c(height, width)) # using MEASURE
+
+# Element 10: Using Split-Apply-Combine
+# Group in different ways: first see SILAC example for dplyr
+
+# Scenario 1, group by type and key:
+PlayData.t %>%
+  group_by(type, key) %>%
+  summarise(Average = mean(value))
+
+# Scenario 2, group by time and key:
+PlayData.t %>%
+  group_by(time, key) %>%
+  summarise(Average = mean(value))
+
+# Scenario 3, group by type and time:
+PlayData.t %>%
+  group_by(type, time) %>%
+  summarise(Average = mean(value))
+
+
